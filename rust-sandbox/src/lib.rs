@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use worker::fetch_with_str;
 use worker::{kv::KvStore, prelude::*};
 
 mod utils;
@@ -61,6 +62,19 @@ pub async fn main(mut req: Request) -> Result<Response> {
                 };
             }
             Response::error("Failed to access KV binding".into(), 500)
+        }
+        (_, "/fetch") => {
+            let resp = fetch_with_str("https://example.com/test.txt").await;
+            return match resp {
+                Ok(r) => {
+                    if r.status() == 200 {
+                        Response::ok(Some("test".into()))
+                    } else {
+                        Response::error("failed".into(), r.status())
+                    }
+                }
+                Err(_e) => Response::error("failed".into(), 500),
+            };
         }
         (_, "/404") => Response::error("Not Found".to_string(), 404),
         _ => Response::ok(Some(format!("{:?} {}", req.method(), req.path()))),

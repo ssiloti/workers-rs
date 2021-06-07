@@ -8,12 +8,13 @@ edition = "2018"
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["Request", "Response", "Headers", "ReadableStream", "RequestRedirect", "ResponseInit"]
+default = ["Request", "Response", "Headers", "ReadableStream", "RequestRedirect", "RequestInit", "ResponseInit"]
 Request = []
 Response = []
 Headers = []
 ReadableStream = []
 RequestRedirect = []
+RequestInit = []
 ResponseInit = []
 
 
