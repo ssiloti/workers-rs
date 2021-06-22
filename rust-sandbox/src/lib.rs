@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use worker::fetch_with_request;
 use worker::fetch_with_str;
 use worker::{kv::KvStore, prelude::*};
 
@@ -49,9 +50,9 @@ pub async fn main(mut req: Request) -> Result<Response> {
                 .await
                 .is_err()
             {
-                return Response::error("Failed to put into KV".into(), 500);
+                Response::error("Failed to put into KV".into(), 500)
             } else {
-                return Response::empty();
+                Response::empty()
             }
         }
         (_, "/jobs") => {
@@ -65,16 +66,30 @@ pub async fn main(mut req: Request) -> Result<Response> {
         }
         (_, "/fetch") => {
             let resp = fetch_with_str("https://example.com/test.txt").await;
-            return match resp {
+            match resp {
                 Ok(r) => {
-                    if r.status() == 200 {
+                    if r.status_code() == 200 {
                         Response::ok(Some("test".into()))
                     } else {
-                        Response::error("failed".into(), r.status())
+                        Response::error("failed".into(), r.status_code())
                     }
                 }
                 Err(_e) => Response::error("failed".into(), 500),
-            };
+            }
+        }
+        (_, "/fetch_with_req") => {
+            let worker_req = Request::new("https://example.com/test.txt");
+            let resp = fetch_with_request(&worker_req).await;
+            match resp {
+                Ok(r) => {
+                    if r.status_code() == 200 && r.edge_response().is_some() {
+                        Response::ok(Some("fetch_with_req success!".into()))
+                    } else {
+                        Response::error("fetch_with_req failed!".into(), r.status_code())
+                    }
+                }
+                Err(_e) => Response::error("failed".into(), 500),
+            }
         }
         (_, "/404") => Response::error("Not Found".to_string(), 404),
         _ => Response::ok(Some(format!("{:?} {}", req.method(), req.path()))),

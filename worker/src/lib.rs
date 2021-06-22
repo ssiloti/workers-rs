@@ -10,6 +10,7 @@ use serde::{de::DeserializeOwned, Serialize};
 use url::Url;
 use wasm_bindgen::JsValue;
 
+pub use global::fetch_with_request;
 pub use global::fetch_with_str;
 
 pub use worker_kv as kv;
@@ -78,6 +79,11 @@ impl From<(String, EdgeRequest)> for Request {
 }
 
 impl Request {
+    pub fn new(url: &str) -> Request {
+        let req = EdgeRequest::new_with_str(url).unwrap();
+        Request::from(("fetch".to_string(), req))
+    }
+
     pub async fn json<B: DeserializeOwned>(&mut self) -> Result<B> {
         if !self.body_used {
             self.body_used = true;
@@ -132,6 +138,7 @@ impl Request {
 pub struct Response {
     body: Option<String>,
     status_code: u16,
+    edge_response: Option<EdgeResponse>,
 }
 
 impl Response {
@@ -140,6 +147,7 @@ impl Response {
             return Ok(Self {
                 body: Some(data),
                 status_code: 200,
+                edge_response: None,
             });
         }
 
@@ -149,6 +157,7 @@ impl Response {
         Ok(Self {
             body,
             status_code: 200,
+            edge_response: None,
         })
     }
 
@@ -156,6 +165,7 @@ impl Response {
         Ok(Self {
             body: None,
             status_code: 200,
+            edge_response: None,
         })
     }
 
@@ -163,7 +173,16 @@ impl Response {
         Ok(Self {
             body: Some(msg),
             status_code: status,
+            edge_response: None,
         })
+    }
+
+    pub fn status_code(&self) -> u16 {
+        self.status_code
+    }
+
+    pub fn edge_response(&self) -> Option<&EdgeResponse> {
+        self.edge_response.as_ref()
     }
 }
 
@@ -188,9 +207,10 @@ impl From<Response> for EdgeResponse {
 
 impl From<EdgeResponse> for Response {
     fn from(res: EdgeResponse) -> Self {
-        Self{
+        Self {
             body: None,
             status_code: res.status(),
+            edge_response: Some(res),
         }
     }
 }
