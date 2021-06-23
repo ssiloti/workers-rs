@@ -1,4 +1,9 @@
+use std::collections::HashMap;
+
+use js_sys::{JsString, Promise};
 use wasm_bindgen::prelude::*;
+
+use crate::Request;
 
 #[wasm_bindgen]
 extern "C" {
@@ -99,4 +104,57 @@ extern "C" {
 
     #[wasm_bindgen(structural, method, getter, js_name=certSubjectDNRFC225, js_class = "tlsClientAuth")]
     pub fn cert_subject_dn_rfc225(this: &TlsClientAuth) -> String;
+}
+
+#[wasm_bindgen]
+extern "C" {
+    pub type DurableObjectState;
+    pub type DurableObjectStorage;
+
+    #[wasm_bindgen(method, getter)]
+    pub fn id(this: &DurableObjectState) -> DurableObjectId;
+
+    #[wasm_bindgen(method, getter)]
+    pub fn storage(this: &DurableObjectState) -> DurableObjectStorage;
+}
+
+#[wasm_bindgen]
+extern "C" {
+    pub type DurableObjectId;
+
+    #[wasm_bindgen(method, js_name=toString)]
+    pub fn to_string(this: &DurableObjectId) -> JsString;
+}
+
+#[wasm_bindgen]
+extern "C" {
+    pub type Env;
+
+    #[wasm_bindgen(method, getter, js_name=durableObject)]
+    pub fn durable_object(this: &Env) -> DurableObjectNamespace;
+}
+
+#[wasm_bindgen]
+extern "C" {
+    pub type DurableObjectNamespace;
+
+    #[wasm_bindgen(method)]
+    pub fn get(this: &DurableObjectNamespace, id: &DurableObjectId) -> DurableObjectStub;
+
+    #[wasm_bindgen(method, js_name=newUniqueId)]
+    pub fn new_unique_id(this: &DurableObjectNamespace) -> DurableObjectId;
+
+    #[wasm_bindgen(method, js_name=idFromName)]
+    pub fn id_from_name(this: &DurableObjectNamespace, name: &str) -> DurableObjectId;
+
+    #[wasm_bindgen(method, js_name=idFromString)]
+    pub fn id_from_string(this: &DurableObjectNamespace, name: &str) -> DurableObjectId;
+}
+
+#[wasm_bindgen]
+extern "C" {
+    pub type DurableObjectStub;
+
+    #[wasm_bindgen(method)]
+    pub fn fetch(this: &DurableObjectStub, request: &Request) -> Promise;
 }

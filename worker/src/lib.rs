@@ -3,7 +3,8 @@ use std::result::Result as StdResult;
 mod global;
 
 use edgeworker_sys::{
-    Cf, Request as EdgeRequest, Response as EdgeResponse, ResponseInit as EdgeResponseInit,
+    Cf, DurableObjectState, Env as CfEnv, Request as EdgeRequest, Response as EdgeResponse,
+    ResponseInit as EdgeResponseInit,
 };
 use js_sys::JsString;
 use serde::{de::DeserializeOwned, Serialize};
@@ -310,5 +311,16 @@ impl From<JsValue> for Error {
 impl From<Error> for JsValue {
     fn from(e: Error) -> Self {
         JsValue::from_str(&e.to_string())
+    }
+}
+
+pub struct DurableObject {
+    state: DurableObjectState,
+    env: CfEnv,
+}
+
+impl DurableObject {
+    pub fn new(state: DurableObjectState, env: CfEnv) -> Self {
+        Self { state, env }
     }
 }
