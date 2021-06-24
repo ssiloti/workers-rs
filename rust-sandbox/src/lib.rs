@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use worker::fetch_with_request;
 use worker::fetch_with_str;
+use worker::CfEnv;
+use worker::Counter;
 use worker::{kv::KvStore, prelude::*};
 
 mod utils;
@@ -15,7 +17,7 @@ struct MyData {
 }
 
 #[cf::worker(fetch)]
-pub async fn main(mut req: Request) -> Result<Response> {
+pub async fn main(mut req: Request, env: CfEnv) -> Result<Response> {
     utils::set_panic_hook();
 
     match (req.method(), req.path().as_str()) {

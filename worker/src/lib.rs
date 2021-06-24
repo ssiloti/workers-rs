@@ -3,7 +3,7 @@ use std::result::Result as StdResult;
 mod global;
 
 use edgeworker_sys::{
-    Cf, DurableObjectState, Env as CfEnv, Request as EdgeRequest, Response as EdgeResponse,
+    Cf, DurableObjectState, Request as EdgeRequest, Response as EdgeResponse,
     ResponseInit as EdgeResponseInit,
 };
 use js_sys::JsString;
@@ -15,6 +15,8 @@ pub use global::fetch_with_request;
 pub use global::fetch_with_str;
 
 pub use worker_kv as kv;
+
+pub use edgeworker_sys::Env as CfEnv;
 
 pub type Result<T> = StdResult<T, Error>;
 
@@ -314,13 +316,18 @@ impl From<Error> for JsValue {
     }
 }
 
-pub struct DurableObject {
+pub struct Counter {
     state: DurableObjectState,
     env: CfEnv,
+    value: i32,
 }
 
-impl DurableObject {
+impl Counter {
     pub fn new(state: DurableObjectState, env: CfEnv) -> Self {
-        Self { state, env }
+        Self {
+            state,
+            env,
+            value: 0,
+        }
     }
 }

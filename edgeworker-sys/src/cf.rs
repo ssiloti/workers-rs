@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use js_sys::{JsString, Promise};
 use wasm_bindgen::prelude::*;
 
@@ -130,8 +128,8 @@ extern "C" {
 extern "C" {
     pub type Env;
 
-    #[wasm_bindgen(method, getter, js_name=durableObject)]
-    pub fn durable_object(this: &Env) -> DurableObjectNamespace;
+    #[wasm_bindgen(method, getter, js_name=Counter)]
+    pub fn counter(this: &Env) -> DurableObjectNamespace;
 }
 
 #[wasm_bindgen]

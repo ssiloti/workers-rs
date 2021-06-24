@@ -1,7 +1,31 @@
 name = "rust-sandbox"
-type = "rust"
+# type = "javascript" is required to use the `[build]` section
+type = "javascript"
 
 account_id = ""
 workers_dev = true
 route = ""
 zone_id = ""
+
+[build]
+command = "wasm-pack build --target web --out-name rustwasm --out-dir worker/wasm"
+
+[build.upload]
+dir = "worker"
+format = "modules"
+main = "./index.mjs"
+
+[[build.upload.rules]]
+type = "ESModule"
+globs = ["**/*.mjs", "wasm/*.js"]
+
+[[build.upload.rules]]
+type = "CompiledWasm"
+globs = ["**/*.wasm"]
+
+
+#[durable_objects]
+#bindings = [
+    # Binding to our DurableObjectExample class
+#  { name = "COUNTER", class_name = "Counter" }
+#]

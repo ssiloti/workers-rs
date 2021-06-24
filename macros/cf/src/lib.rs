@@ -29,9 +29,9 @@ pub fn worker(attr: TokenStream, item: TokenStream) -> TokenStream {
             // create a new "main" function that takes the edgeworker_sys::Request, and calls the
             // original attributed function, passing in a converted worker::Request
             let wrapper_fn = quote! {
-                pub async fn #original_input_fn_ident(ty: String, req: edgeworker_sys::Request) -> worker::Result<edgeworker_sys::Response> {
+                pub async fn #original_input_fn_ident(ty: String, req: edgeworker_sys::Request, env: edgeworker_sys::Env) -> worker::Result<edgeworker_sys::Response> {
                     // get the worker::Result<worker::Response> by calling the original fn
-                    #output_fn_ident(worker::Request::from((ty, req))).await
+                    #output_fn_ident(worker::Request::from((ty, req)), env).await
                         .map(edgeworker_sys::Response::from)
                         .map_err(worker::Error::from)
                 }
