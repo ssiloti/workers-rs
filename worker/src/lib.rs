@@ -1,4 +1,6 @@
+use core::time;
 use std::result::Result as StdResult;
+use std::thread;
 
 mod global;
 
@@ -11,8 +13,12 @@ use serde::{de::DeserializeOwned, Serialize};
 use url::Url;
 use wasm_bindgen::JsValue;
 
+use wasm_bindgen::prelude::*;
+
 pub use global::fetch_with_request;
 pub use global::fetch_with_str;
+pub use global::stub_fetch_with_req;
+pub use global::stub_fetch_with_str;
 
 pub use worker_kv as kv;
 
@@ -21,6 +27,7 @@ pub use edgeworker_sys::Env as CfEnv;
 pub type Result<T> = StdResult<T, Error>;
 
 pub mod prelude {
+    pub use crate::Counter;
     pub use crate::Method;
     pub use crate::Request;
     pub use crate::Response;
@@ -138,6 +145,7 @@ impl Request {
     }
 }
 
+#[derive(Debug)]
 pub struct Response {
     body: Option<String>,
     status_code: u16,
@@ -182,6 +190,10 @@ impl Response {
 
     pub fn status_code(&self) -> u16 {
         self.status_code
+    }
+
+    pub fn body(&self) -> Option<&String> {
+        self.body.as_ref()
     }
 
     pub fn edge_response(&self) -> Option<&EdgeResponse> {
@@ -283,6 +295,8 @@ impl From<String> for Redirect {
     }
 }
 
+#[derive(Debug)]
+
 pub enum Error {
     BodyUsed,
     Json((String, u16)),
@@ -316,18 +330,27 @@ impl From<Error> for JsValue {
     }
 }
 
+#[wasm_bindgen]
 pub struct Counter {
     state: DurableObjectState,
     env: CfEnv,
     value: i32,
 }
 
+#[wasm_bindgen]
 impl Counter {
+    #[wasm_bindgen(constructor)]
     pub fn new(state: DurableObjectState, env: CfEnv) -> Self {
         Self {
             state,
             env,
             value: 0,
         }
+    }
+
+    #[wasm_bindgen(method)]
+    pub async fn fetch(self, request: EdgeRequest) -> EdgeResponse {
+        let counter = 2;
+        EdgeResponse::new_with_opt_str(Some(format!("Count: {}", counter).as_str())).unwrap()
     }
 }

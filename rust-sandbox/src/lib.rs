@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 use worker::fetch_with_request;
 use worker::fetch_with_str;
+use worker::stub_fetch_with_req;
 use worker::CfEnv;
-use worker::Counter;
 use worker::{kv::KvStore, prelude::*};
 
 mod utils;
@@ -92,6 +92,28 @@ pub async fn main(mut req: Request, env: CfEnv) -> Result<Response> {
                 }
                 Err(_e) => Response::error("failed".into(), 500),
             }
+        }
+        (_, "/fetch_with_durable_object") => {
+            let counter = env.counter();
+            let id = counter.id_from_name("A");
+            //let str_id: String = id.to_string().into();
+            let stub = counter.get(&id);
+            let worker_req = Request::new("https://example.com/increment");
+            let resp = stub_fetch_with_req(&stub, &worker_req).await;
+            match resp {
+                Ok(r) => {
+                    if r.status_code() == 200 {
+                        Response::ok(r.body().map(String::from))
+                    } else {
+                        Response::error(
+                            format!("Request failed. Response: {:?}", r),
+                            r.status_code(),
+                        )
+                    }
+                }
+                Err(e) => Response::error(format!("Durable Object error: {:?}", e), 500),
+            }
+            //Response::ok(Some(format!("{:?} {}", req.method(), req.path())))
         }
         (_, "/404") => Response::error("Not Found".to_string(), 404),
         _ => Response::ok(Some(format!("{:?} {}", req.method(), req.path()))),

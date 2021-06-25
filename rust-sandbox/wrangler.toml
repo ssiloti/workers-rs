@@ -24,8 +24,7 @@ type = "CompiledWasm"
 globs = ["**/*.wasm"]
 
 
-#[durable_objects]
-#bindings = [
-    # Binding to our DurableObjectExample class
-#  { name = "COUNTER", class_name = "Counter" }
-#]
+[durable_objects]
+bindings = [
+  { name = "COUNTER", class_name = "Counter" }
+]

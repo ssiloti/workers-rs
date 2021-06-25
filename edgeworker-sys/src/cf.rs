@@ -2,6 +2,7 @@ use js_sys::{JsString, Promise};
 use wasm_bindgen::prelude::*;
 
 use crate::Request;
+use crate::RequestInit;
 
 #[wasm_bindgen]
 extern "C" {
@@ -128,7 +129,7 @@ extern "C" {
 extern "C" {
     pub type Env;
 
-    #[wasm_bindgen(method, getter, js_name=Counter)]
+    #[wasm_bindgen(method, getter, js_name=COUNTER)]
     pub fn counter(this: &Env) -> DurableObjectNamespace;
 }
 
@@ -136,7 +137,7 @@ extern "C" {
 extern "C" {
     pub type DurableObjectNamespace;
 
-    #[wasm_bindgen(method)]
+    #[wasm_bindgen(method, js_name=get)]
     pub fn get(this: &DurableObjectNamespace, id: &DurableObjectId) -> DurableObjectStub;
 
     #[wasm_bindgen(method, js_name=newUniqueId)]
@@ -153,6 +154,23 @@ extern "C" {
 extern "C" {
     pub type DurableObjectStub;
 
-    #[wasm_bindgen(method)]
-    pub fn fetch(this: &DurableObjectStub, request: &Request) -> Promise;
+    #[wasm_bindgen(method, js_name=fetch)]
+    pub fn fetch_with_request(this: &DurableObjectStub, request: &Request) -> Promise;
+
+    #[wasm_bindgen(method, js_name=fetch)]
+    pub fn fetch_with_str(this: &DurableObjectStub, input: &str) -> Promise;
+
+    #[wasm_bindgen(method, js_name=fetch)]
+    pub fn fetch_with_request_and_init(
+        this: &DurableObjectStub,
+        input: &Request,
+        init: &RequestInit,
+    ) -> Promise;
+
+    #[wasm_bindgen(method, js_name=fetch)]
+    pub fn fetch_with_str_and_init(
+        this: &DurableObjectStub,
+        input: &str,
+        init: &RequestInit,
+    ) -> Promise;
 }
